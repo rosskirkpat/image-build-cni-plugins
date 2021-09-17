@@ -16,6 +16,14 @@ RUN git clone --depth=1 https://github.com/containernetworking/plugins.git $GOPA
         -X github.com/containernetworking/plugins/pkg/utils/buildversion.BuildVersion=${TAG} \
         -linkmode=external -extldflags \"-static -Wl,--fatal-warnings\" \
     "
+
+RUN git clone --depth=1 https://github.com/flannel-io/cni-plugin.git $GOPATH/src/github.com/flannel-io/cni-plugin \
+    && cd $GOPATH/src/github.com/flannel-io/cni-plugin \
+    && git fetch --all --tags --prune \
+    && git checkout tags/${TAG} -b ${TAG} \
+    && go mod vendor \
+    && make 
+
 WORKDIR $GOPATH/src/github.com/containernetworking/plugins
 RUN go-assert-static.sh bin/* \
     && go-assert-boring.sh \
@@ -23,6 +31,7 @@ RUN go-assert-static.sh bin/* \
     bin/bridge \
     bin/dhcp \
     bin/firewall \
+    bin/flannel \
     bin/host-device \
     bin/host-local \
     bin/ipvlan \
